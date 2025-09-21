@@ -1,0 +1,285 @@
+<?xml version="1.0"?>
+
+<!-- property list for vfrflight -->
+<PropertyList>
+    <generic>
+        <output>
+            <line_separator></line_separator>
+            <var_separator>;</var_separator>
+
+            <chunk>
+                <name>time-gmt</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/time/gmt</node>
+            </chunk>
+            <chunk>
+                <name>local-offset</name>
+                <type>integer</type>
+                <format>%d</format>
+                <node>/sim/time/local-offset</node>
+            </chunk>
+            <chunk>
+                <name>altitudeAboveGroundFt = 0.f</name>
+                <type>float</type>
+                <format>%f</format>
+                <node>/position/altitude-agl-ft</node>
+            </chunk>
+            <chunk>
+                <name>groundAltitudeFt = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/position/ground-elev-ft</node>
+            </chunk>           
+            <chunk>
+                <name>windSpeedKts = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/environment/wind-speed-kt</node>
+            </chunk>
+            <chunk>
+                <name>windDirectionDegT = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/environment/wind-from-heading-deg</node>
+            </chunk>
+            <chunk>
+                <name>ambientTemperatureCelsius = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/environment/temperature-degc</node>
+            </chunk>
+            <!--totalAirTemperatureCelsius = 0.f,-->            
+            <chunk>
+                <name>seaLevelPressureMbar = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/environment/pressure-sea-level-inhg</node>
+            </chunk>
+
+            <!--pitotIcePercent = 0.f-->
+            <!--structuralIcePercent = 0.f-->
+            <chunk>
+                <name>airplaneTotalWeightLbs = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/fdm/yasim/gross-weight-lbs</node>
+            </chunk>
+            <chunk>
+                <name>airplaneTotalWeightLbs = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/fdm/jsbsim/inertia/weight-lbs</node>
+            </chunk>
+            <!--airplaneMaxGrossWeightLbs = 0.f-->
+            <!--airplaneEmptyWeightLbs = 0.f-->
+            <chunk>
+                <name>fuelTotalQuantityGallons = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/consumables/fuel/total-fuel-gals</node>
+            </chunk>
+            <chunk>
+                <name>fuelTotalWeightLbs = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/consumables/fuel/total-fuel-lbs</node>
+            </chunk>
+            <chunk>
+                <name>fuelFlowGPH (jsbsim) = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/fdm/jsbsim/propulsion/engine/fuel-flow-rate-gph</node>
+            </chunk>
+            <chunk>
+                <name>fuelFlowPPH (in PPS from jsbsim) = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/fdm/jsbsim/propulsion/engine/fuel-flow-rate-pps</node>
+            </chunk>
+            <chunk>
+                <name>fuelFlowGPH (yasim) engine 0 = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/engines/engine/fuel-flow-gph</node>
+            </chunk>
+            <chunk>
+                <name>fuelFlowGPH (yasim) engine 1 = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/engines/engine[1]/fuel-flow-gph</node>
+            </chunk>
+            <chunk>
+                <name>fuelFlowGPH (yasim) engine 2 = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/engines/engine[2]/fuel-flow-gph</node>
+            </chunk>
+            <chunk>
+                <name>fuelFlowGPH (yasim) engine 3 = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/engines/engine[3]/fuel-flow-gph</node>
+            </chunk>
+
+            <chunk>
+                <name>magVarDeg = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/environment/magnetic-variation-deg</node>
+            </chunk>
+            <chunk>
+                <name>ambientVisibilityMeter = 0.f;</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/environment/effective-visibility-m</node>
+            </chunk>
+            <chunk>
+                <name>trackMagDeg = 0.f;</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/orientation/track-magnetic-deg</node>
+            </chunk>
+            <chunk>
+                <name>trackTrueDeg = 0.f;</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/orientation/true-heading-deg</node>
+            </chunk>
+            
+            <chunk>
+                <name>airplaneTitle = ""</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/description</node>
+            </chunk>
+            <!--airplaneType = ""-->
+            <chunk>
+                <name>airplaneModel = ""</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/aircraft</node>
+            </chunk>
+            <chunk>
+                <name>airplaneReg = ""</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/multiplay/callsign</node>
+            </chunk>
+            <!--airplaneAirline = ""-->
+            <!--airplaneFlightnumber = ""-->
+            <!--fromIdent = ""-->
+            <!--toIdent = ""-->
+
+            <chunk>
+                <name>atools::geo::Pos position</name>
+                <type>float</type>
+                <format>%.10f</format>
+                <node>/position/latitude-deg</node>
+            </chunk>
+            <chunk>
+                <name>atools::geo::Pos position</name>
+                <type>float</type>
+                <format>%.10f</format>
+                <node>/position/longitude-deg</node>
+            </chunk>            
+            <chunk>
+                <name>headingTrueDeg = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/orientation/heading-deg</node>
+            </chunk>
+            <chunk>
+                <name>headingMagDeg = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/orientation/heading-magnetic-deg</node>
+            </chunk>
+            <chunk>
+                <name>groundSpeedKts = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/velocities/groundspeed-kt</node>
+            </chunk>
+            <chunk>
+                <name>indicatedAltitudeFt = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/instrumentation/altimeter/indicated-altitude-ft</node>
+            </chunk>
+            <chunk>
+                <name>indicatedSpeedKts = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/instrumentation/airspeed-indicator/indicated-speed-kt</node>
+            </chunk>
+            <chunk>
+                <name>trueAirspeedKts = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/instrumentation/airspeed-indicator/true-speed-kt</node>
+            </chunk>
+            <chunk>
+                <name>machSpeed = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/instrumentation/airspeed-indicator/indicated-mach</node>
+            </chunk>
+            <chunk>
+                <name>verticalSpeedFeetPerMin = 0.f</name>
+                <format>%f</format>
+                <type>float</type>
+                <node>/instrumentation/vertical-speed-indicator/indicated-speed-fpm</node>
+            </chunk>
+            <chunk>
+                <name>flightModel (jsb yasim)</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/flight-model</node>
+            </chunk>
+            <chunk>
+                <name>freeze (simulation paused)</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/freeze/master</node>
+            </chunk>
+            <chunk>
+                <name>replay (replay enabled)</name>
+                <format>%d</format>
+                <type>int</type>
+                <node>/sim/replay/replay-state</node>
+            </chunk>
+            <chunk>
+                <name>multiplayer server enabled</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/multiplay/online</node>
+            </chunk>
+            <chunk>
+                <name>multiplayer server</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/sim/multiplay/selected-server</node>
+            </chunk>
+            <chunk>
+                <name>ai objects</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/ai-short-list</node>
+            </chunk>
+
+            <!--modelRadiusFt = 0-->
+            <!--wingSpanFt = 0-->
+            <!--objectId = 0L-->
+
+            <!--AircraftFlags flags = atools::fs::sc::NONE;-->
+            <!--Category category;-->
+            <!--EngineType engineType = atools::fs::sc::UNSUPPORTED;-->
+            <!--quint8 numberOfEngines = 0;-->
+            <!--bool debug = false;-->
+
+        </output>
+
+    </generic>
+
+</PropertyList>
