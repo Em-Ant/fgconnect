@@ -36,8 +36,9 @@ def translateToAirplane( fgData ):
     fuelFlowPPH            = fgData["/engines/engine[1]/fuel-flow-gph"]  # FIXME
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
-                 "altitudeAboveGroundFt"      : fgData["/position/altitude-agl-ft"],
-                 "groundAltitudeFt"           : fgData["/position/ground-elev-ft"],
+                  "altitude"                   : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
+                  "altitudeAboveGroundFt"      : fgData["/position/altitude-agl-ft"],
+                  "groundAltitudeFt"           : fgData["/position/ground-elev-ft"],
                  "headingTrueDeg"             : fgData["/orientation/heading-deg"],
                  "headingMagDeg"              : fgData["/orientation/heading-magnetic-deg"],
                  "groundSpeedKts"             : fgData["/velocities/groundspeed-kt"],

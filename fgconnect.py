@@ -66,6 +66,7 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
   lnmIP_ADDR  = pCfg["IP_ADDR"]
   lnmUDP_PORT = pCfg["UDP_PORT"]
   sleepTime   = pCfg["sleepTime"]
+  verbose     = pCfg.get("verbose", False)
   lnm         = LittleNavMapConnect()
 
   # Create a TCP/IP socket
@@ -96,9 +97,20 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
         # Translate my own Airplane data FlightGear to LittleNavMap
         if rxAirplaneData:
           memAirplane = translateToAirplane(rxAirplaneData)
+          if verbose:
+            print(f"USER: alt={memAirplane.get('altitude','MISSING'):.1f} ft, "
+                  f"agl={memAirplane.get('altitudeAboveGroundFt',0):.1f} ft, "
+                  f"ground={memAirplane.get('groundAltitudeFt',0):.1f} ft, "
+                  f"vs={memAirplane.get('verticalSpeedFeetPerMin',0):.1f} fpm, "
+                  f"lat={memAirplane.get('laty',0):.4f}, lon={memAirplane.get('lonx',0):.4f}")
         # Translate AI data FlightGear to LittleNavMap
         if rxAIData:
           memAI = translateToAI(rxAIData)
+          if verbose and memAI:
+            a = memAI[0]
+            print(f"AI[0]: alt={a.get('altitude','MISSING')} ft, "
+                  f"vs={a.get('verticalSpeedFeetPerMin',0):.1f} fpm, "
+                  f"lat={a.get('laty',0):.4f}, lon={a.get('lonx',0):.4f}")
         # Serialize and packetize data
         lnm.serializeBuffer(memAirplane, memAI)
         # Send data to LittleNavMap
@@ -122,9 +134,9 @@ if __name__ == '__main__':
   fglnmPT        = 7755
   fghttpPT       = 5400
 
-  # check the command line arguments
+  verbose = False
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hs", ["help", "lnmip", "lnmpt", "fgip", "fglnmpt", "fghttppt"])
+    opts, args = getopt.getopt(sys.argv[1:], "hsv", ["help", "verbose", "lnmip", "lnmpt", "fgip", "fglnmpt", "fghttppt"])
   except getopt.GetoptError as err:
     print(err)
     sys.exit(2)
@@ -135,6 +147,7 @@ if __name__ == '__main__':
       print("  Argument      Default    Description")
       print("  [-h]                     Help")
       print("  [-s]                     Stand-Alone Mode")
+      print("  [-v] [--verbose]         Verbose debug output")
       print("  [--lnmip]     127.0.0.1  IP Address / Host Name of LittleNavMap")
       print("  [--lnmpt]     51968      UDP Port of LittleNavMap")
       print("  [--fgip]      127.0.0.1  IP Address / Host Name of FlightGear")
@@ -144,6 +157,8 @@ if __name__ == '__main__':
       sys.exit()
     elif (o == "-s"):
       standAloneMode = True
+    elif (o == "-v") or (o=="--verbose"):
+      verbose = True
     elif (o == "--lnmip"):    lnmIP = a
     elif (o == "--lnmpt"):    lnmPT = int(a)
     elif (o == "--fgip"):     fgIP = a
@@ -178,6 +193,7 @@ if __name__ == '__main__':
     pCfg = { "IP_ADDR"    : lnmIP,
              "UDP_PORT"   : lnmPT,
              "sleepTime"  : 1/10.0,
+             "verbose"    : verbose,
            }
     p2 = Process( target=processWriteToLittleNavMap, args=(flag2, myEvtQ, AIEvtQ, pCfg) )
     p2.start()
