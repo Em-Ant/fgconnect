@@ -24,20 +24,41 @@ def distanceKm( p1, p2 ):
   
   return earthRadiusKm * c
 
-def translateToAirplane( fgData ):
-  flightModel = fgData["/sim/flight-model"]
-  if "jsb" in flightModel:
-    airplaneTotalWeightLbs = fgData["/fdm/jsbsim/inertia/weight-lbs"]
-    fuelFlowGPH            = fgData["/fdm/jsbsim/propulsion/engine/fuel-flow-rate-gph"]
-    fuelFlowPPH            = fgData["/fdm/jsbsim/propulsion/engine/fuel-flow-rate-pps"]
-  else:
-    airplaneTotalWeightLbs = fgData["/fdm/yasim/gross-weight-lbs"]
-    fuelFlowGPH            = fgData["/engines/engine/fuel-flow-gph"]
-    fuelFlowPPH            = fgData["/engines/engine[1]/fuel-flow-gph"]  # FIXME
+def translateToAirplane(fgData):  
+  flightModel = fgData["/sim/flight-model"]  
+  if "jsb" in flightModel:  
+    airplaneTotalWeightLbs = fgData["/fdm/jsbsim/inertia/weight-lbs"]  
+    fuelFlowGPH = fgData["/fdm/jsbsim/propulsion/engine/fuel-flow-rate-gph"]  
+    fuelFlowPPH = fgData["/fdm/jsbsim/propulsion/engine/fuel-flow-rate-pps"]  
+  else:  
+    airplaneTotalWeightLbs = fgData["/fdm/yasim/gross-weight-lbs"]  
+    fuelFlowGPH = fgData["/engines/engine/fuel-flow-gph"]  
+    fuelFlowPPH = fgData["/engines/engine[1]/fuel-flow-gph"]  # FIXME  
+  
+  # Calculate shortFlags with enhanced on-ground detection - MOVED OUTSIDE if/else  
+  shortFlags = 0x0050  # IS_USER (0x0010) | SIM_XPLANE (0x0040)  
+    
+  # Enhanced on-ground detection similar to LNM logic  
+  altitude_agl = fgData["/position/altitude-agl-ft"]  
+  ground_speed = fgData["/velocities/groundspeed-kt"]  
+  vertical_speed = fgData["/instrumentation/vertical-speed-indicator/indicated-speed-fpm"]  
+    
+  # Primary check: altitude AGL  
+  on_ground_alt = altitude_agl < 10.0  
+    
+  # Secondary checks: speed-based (similar to LNM's fix logic)  
+  gs_flying = ground_speed > 40.0  # LNM uses 40 kts threshold  
+  vs_flying = abs(vertical_speed) > 100.0  # LNM uses 100 fpm threshold  
+    
+  # Set ON_GROUND bit if altitude check passes and not flying by speed  
+  if on_ground_alt and not (gs_flying or vs_flying):  
+    shortFlags |= 0x0001  # Set ON_GROUND bit  
+  
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
                   "altitude"                   : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
                   "altitudeAboveGroundFt"      : fgData["/position/altitude-agl-ft"],
+                  "shortFlags"                 : shortFlags,
                   "groundAltitudeFt"           : fgData["/position/ground-elev-ft"],
                  "headingTrueDeg"             : fgData["/orientation/heading-deg"],
                  "headingMagDeg"              : fgData["/orientation/heading-magnetic-deg"],
