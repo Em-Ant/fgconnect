@@ -154,12 +154,12 @@
                 <node>/sim/description</node>
             </chunk>
             <!--airplaneType = ""-->
-            <chunk>
-                <name>airplaneModel = ""</name>
-                <format>%s</format>
-                <type>string</type>
-                <node>/sim/aircraft</node>
-            </chunk>
+	    <chunk>  
+	        <name>airplaneModel = ""</name>  
+	        <format>%s</format>  
+	        <type>string</type>  
+	        <node>/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model</node>  
+	    </chunk>
             <chunk>
                 <name>airplaneReg = ""</name>
                 <format>%s</format>
