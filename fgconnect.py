@@ -119,8 +119,8 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
                   fuel_level_gal += level
 
           # Map values back to memAirplane for LittleNavMap serialization
-          memAirplane['fuelFlow'] = fuel_flow_gph
-          memAirplane['fuelLevel'] = fuel_level_gal
+          memAirplane['fuelFlowGPH'] = fuel_flow_gph
+          memAirplane['fuelTotalQuantityGallons'] = fuel_level_gal
           # -------------------------------------
 
           if verbose:

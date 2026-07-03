@@ -28,17 +28,14 @@ def translateToAirplane( fgData ):
   flightModel = fgData["/sim/flight-model"]
   if "jsb" in flightModel:
     airplaneTotalWeightLbs = fgData["/fdm/jsbsim/inertia/weight-lbs"]
-    fuelFlowGPH            = fgData["/fdm/jsbsim/propulsion/engine/fuel-flow-rate-gph"]
-    fuelFlowPPH            = fgData["/fdm/jsbsim/propulsion/engine/fuel-flow-rate-pps"]
   else:
     airplaneTotalWeightLbs = fgData["/fdm/yasim/gross-weight-lbs"]
-    fuelFlowGPH            = fgData["/engines/engine/fuel-flow-gph"]
-    fuelFlowPPH            = fgData["/engines/engine[1]/fuel-flow-gph"]  # FIXME
+    
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
-                  "altitude"                   : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
-                  "altitudeAboveGroundFt"      : fgData["/position/altitude-agl-ft"],
-                  "groundAltitudeFt"           : fgData["/position/ground-elev-ft"],
+                 "altitude"                   : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
+                 "altitudeAboveGroundFt"      : fgData["/position/altitude-agl-ft"],
+                 "groundAltitudeFt"           : fgData["/position/ground-elev-ft"],
                  "headingTrueDeg"             : fgData["/orientation/heading-deg"],
                  "headingMagDeg"              : fgData["/orientation/heading-magnetic-deg"],
                  "groundSpeedKts"             : fgData["/velocities/groundspeed-kt"],
@@ -52,10 +49,10 @@ def translateToAirplane( fgData ):
                  "ambientTemperatureCelsius"  : fgData["/environment/temperature-degc"],
                  "seaLevelPressureMbar"       : fgData["/environment/pressure-sea-level-inhg"] / 0.029530,
                  "airplaneTotalWeightLbs"     : airplaneTotalWeightLbs,
-                 "fuelTotalQuantityGallons"   : fgData["/consumables/fuel/total-fuel-gals"],
-                 "fuelTotalWeightLbs"         : fgData["/consumables/fuel/total-fuel-lbs"],
-                 "fuelFlowGPH"                : fuelFlowGPH,
-                 "fuelFlowPPH"                : fuelFlowPPH,
+                 "fuelTotalQuantityGallons"   : 0.0,
+                 "fuelTotalWeightLbs"         : 0.0,
+                 "fuelFlowGPH"                : 0.0,
+                 "fuelFlowPPH"                : 0.0,
                  "magVarDeg"                  : fgData["/environment/magnetic-variation-deg"],
                  "ambientVisibilityMeter"     : fgData["/environment/effective-visibility-m"],
                  "trackMagDeg"                : fgData["/orientation/track-magnetic-deg"],
