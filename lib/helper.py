@@ -26,39 +26,64 @@ def distanceKm( p1, p2 ):
 
 def translateToAirplane( fgData ):
   flightModel = fgData["/sim/flight-model"]
+  
+  # Keep JSB weight check exactly as it was in main
   if "jsb" in flightModel:
     airplaneTotalWeightLbs = fgData["/fdm/jsbsim/inertia/weight-lbs"]
   else:
     airplaneTotalWeightLbs = fgData["/fdm/yasim/gross-weight-lbs"]
     
+  # Calculate shortFlags with enhanced on-ground detection
+  shortFlags = 0x0050  # IS_USER (0x0010) | SIM_XPLANE (0x0040)
+    
+  # Enhanced on-ground detection
+  altitude_agl = fgData["/position/altitude-agl-ft"]
+  ground_speed = fgData["/velocities/groundspeed-kt"]
+  vertical_speed = fgData["/instrumentation/vertical-speed-indicator/indicated-speed-fpm"]
+    
+  # Primary check: altitude AGL
+  on_ground_alt = altitude_agl < 10.0
+    
+  # Secondary checks: speed-based
+  gs_flying = ground_speed > 40.0
+  vs_flying = abs(vertical_speed) > 100.0
+    
+  # Set ON_GROUND bit if altitude check passes and not flying by speed
+  if on_ground_alt and not (gs_flying or vs_flying):
+    shortFlags |= 0x0001
+  
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
                  "altitude"                   : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
-                 "altitudeAboveGroundFt"      : fgData["/position/altitude-agl-ft"],
+                 "altitudeAboveGroundFt"      : altitude_agl,
+                 "shortFlags"                 : shortFlags,
                  "groundAltitudeFt"           : fgData["/position/ground-elev-ft"],
                  "headingTrueDeg"             : fgData["/orientation/heading-deg"],
                  "headingMagDeg"              : fgData["/orientation/heading-magnetic-deg"],
-                 "groundSpeedKts"             : fgData["/velocities/groundspeed-kt"],
+                 "groundSpeedKts"             : ground_speed,
                  "indicatedAltitudeFt"        : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
                  "indicatedSpeedKts"          : fgData["/instrumentation/airspeed-indicator/indicated-speed-kt"],
                  "trueAirspeedKts"            : fgData["/instrumentation/airspeed-indicator/true-speed-kt"],
                  "machSpeed"                  : fgData["/instrumentation/airspeed-indicator/indicated-mach"],
-                 "verticalSpeedFeetPerMin"    : fgData["/instrumentation/vertical-speed-indicator/indicated-speed-fpm"],
+                 "verticalSpeedFeetPerMin"    : vertical_speed,
                  "windSpeedKts"               : fgData["/environment/wind-speed-kt"],
                  "windDirectionDegT"          : fgData["/environment/wind-from-heading-deg"],
                  "ambientTemperatureCelsius"  : fgData["/environment/temperature-degc"],
                  "seaLevelPressureMbar"       : fgData["/environment/pressure-sea-level-inhg"] / 0.029530,
                  "airplaneTotalWeightLbs"     : airplaneTotalWeightLbs,
-                 "fuelTotalQuantityGallons"   : 0.0,
-                 "fuelTotalWeightLbs"         : 0.0,
+                 
+                 # Unified Fuel Setup
+                 "fuelTotalQuantityGallons"   : fgData["/consumables/fuel/total-fuel-gals"],
+                 "fuelTotalWeightLbs"         : fgData["/consumables/fuel/total-fuel-lbs"],
                  "fuelFlowGPH"                : 0.0,
                  "fuelFlowPPH"                : 0.0,
+                 
                  "magVarDeg"                  : fgData["/environment/magnetic-variation-deg"],
                  "ambientVisibilityMeter"     : fgData["/environment/effective-visibility-m"],
                  "trackMagDeg"                : fgData["/orientation/track-magnetic-deg"],
                  "trackTrueDeg"               : fgData["/orientation/true-heading-deg"],
                  "title"                      : fgData["/sim/description"],
-                 "model" : fgData["/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model"],
+                 "model"                      : fgData["/sim/aircraft"],
                  "reg"                        : fgData["/sim/multiplay/callsign"],
                  "type"                       : "",
                  "airline"                    : "",
