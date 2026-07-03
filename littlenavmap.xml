@@ -171,6 +171,19 @@
 	        <node>/consumables/fuel/tank[3]/selected</node>  
 	    </chunk>
 
+	    <chunk>
+	        <name>total-fuel-gals</name>
+	        <format>%f</format>
+	        <type>float</type>
+	        <node>/consumables/fuel/total-fuel-gals</node>
+	    </chunk>
+	    <chunk>
+	        <name>total-fuel-lbs</name>
+	        <format>%f</format>
+	        <type>float</type>
+	        <node>/consumables/fuel/total-fuel-lbs</node>
+	    </chunk>
+
             <chunk>
                 <name>magVarDeg = 0.f</name>
                 <format>%f</format>
