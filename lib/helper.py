@@ -58,7 +58,7 @@ def translateToAirplane( fgData ):
                  "trackMagDeg"                : fgData["/orientation/track-magnetic-deg"],
                  "trackTrueDeg"               : fgData["/orientation/true-heading-deg"],
                  "title"                      : fgData["/sim/description"],
-                 "model"                      : fgData["/sim/aircraft"],
+                 "model" : fgData["/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model"],
                  "reg"                        : fgData["/sim/multiplay/callsign"],
                  "type"                       : "",
                  "airline"                    : "",
