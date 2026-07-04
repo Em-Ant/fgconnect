@@ -1,3 +1,28 @@
+# FGconnect (Unified Patched Edition) 🚀
+
+This branch (`combined-fixes`) serves as a consolidated reference environment for `fgconnect`. It resolves upstream merge conflicts and unites three critical tracking and telemetry fixes into a single, functional runtime. 
+
+If you are looking for isolated implementations to review or merge individually, please refer to the standalone feature branches (`status-fix`, `plane-icao`, and `fuel`).
+
+---
+
+### 🛠️ Summary of Combined Fixes & Cross-Repo Collaboration
+
+Achieving full telemetry tracking in Little Navmap (LNM) requires tight coordination between this Python connector framework and the XML network protocol emitter inside [flightgear-addon-littlenavmap](https://github.com/jimishol/flightgear-addon-littlenavmap/tree/combined-fixes). This branch unifies the following enhancements:
+
+1. **Ground Status Fix**
+   * *The Problem:* Flight telemetry consistently locked the aircraft state to "on the ground," failing to trigger active flight log profiling in LNM.
+   * *The Fix:* Corrected the status evaluation logic inside the connector loop to properly track live airborne transitions.
+
+2. **ICAO Aircraft Model Alignment**
+   * *The Problem:* Mismatched or missing aircraft type designators caused LNM to render generic fallback models.
+   * *The Fix:* Synchronized string parsing between the XML payload and the Python connector to ensure proper ICAO companion mapping.
+
+3. **Universal Fuel & Performance Telemetry (FDM-Independent)**
+   * *The Problem:* Legacy fuel mapping relied heavily on FDM-specific property trees (like `/fdm/jsbsim/...`), completely breaking fuel flow and tank telemetry for non-JSBSim aircraft.
+   * *The Fix:* Shifted fuel analytics to a dynamic calculation layer. By collaborating with an updated array structure in the XML protocol, the Python script now dynamically iterates through up to 4 engines and 4 fuel tanks. It checks active engine `running` states, tracks selected tanks, and aggregates total Fuel Flow (GPH/PPH) using live fuel density (`density-ppg`) telemetry.
+
+---
 # About
 
 This small program is used to connect the FlightGear flight simulator to the LittleNavMap.
