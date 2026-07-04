@@ -170,6 +170,12 @@
 	        <type>int</type>  
 	        <node>/consumables/fuel/tank[3]/selected</node>  
 	    </chunk>
+	    <chunk>  
+	        <name>fuelDensityPPG = 6.0</name>  
+	        <format>%f</format>  
+	        <type>float</type>  
+	        <node>/consumables/fuel/tank[0]/density-ppg</node>  
+	    </chunk>
 
             <chunk>
                 <name>magVarDeg = 0.f</name>
