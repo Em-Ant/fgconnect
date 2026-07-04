@@ -73,8 +73,8 @@ def translateToAirplane( fgData ):
                  "airplaneTotalWeightLbs"     : airplaneTotalWeightLbs,
                  
                  # Unified Fuel Setup
-                 "fuelTotalQuantityGallons"   : fgData["/consumables/fuel/total-fuel-gals"],
-                 "fuelTotalWeightLbs"         : fgData["/consumables/fuel/total-fuel-lbs"],
+                 "fuelTotalQuantityGallons"   : 0.0,
+                 "fuelTotalWeightLbs"         : 0.0,
                  "fuelFlowGPH"                : 0.0,
                  "fuelFlowPPH"                : 0.0,
                  
@@ -83,7 +83,7 @@ def translateToAirplane( fgData ):
                  "trackMagDeg"                : fgData["/orientation/track-magnetic-deg"],
                  "trackTrueDeg"               : fgData["/orientation/true-heading-deg"],
                  "title"                      : fgData["/sim/description"],
-                 "model"                      : fgData["/sim/aircraft"],
+                 "model" : fgData["/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model"],
                  "reg"                        : fgData["/sim/multiplay/callsign"],
                  "type"                       : "",
                  "airline"                    : "",
