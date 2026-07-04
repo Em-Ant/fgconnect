@@ -26,8 +26,6 @@ def distanceKm( p1, p2 ):
 
 def translateToAirplane( fgData ):
   flightModel = fgData["/sim/flight-model"]
-  
-  # Keep JSB weight check exactly as it was in main
   if "jsb" in flightModel:
     airplaneTotalWeightLbs = fgData["/fdm/jsbsim/inertia/weight-lbs"]
   else:
@@ -71,13 +69,10 @@ def translateToAirplane( fgData ):
                  "ambientTemperatureCelsius"  : fgData["/environment/temperature-degc"],
                  "seaLevelPressureMbar"       : fgData["/environment/pressure-sea-level-inhg"] / 0.029530,
                  "airplaneTotalWeightLbs"     : airplaneTotalWeightLbs,
-                 
-                 # Unified Fuel Setup
                  "fuelTotalQuantityGallons"   : 0.0,
                  "fuelTotalWeightLbs"         : 0.0,
                  "fuelFlowGPH"                : 0.0,
                  "fuelFlowPPH"                : 0.0,
-                 
                  "magVarDeg"                  : fgData["/environment/magnetic-variation-deg"],
                  "ambientVisibilityMeter"     : fgData["/environment/effective-visibility-m"],
                  "trackMagDeg"                : fgData["/orientation/track-magnetic-deg"],
