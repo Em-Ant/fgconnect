@@ -170,18 +170,11 @@
 	        <type>int</type>  
 	        <node>/consumables/fuel/tank[3]/selected</node>  
 	    </chunk>
-
-	    <chunk>
-	        <name>total-fuel-gals</name>
-	        <format>%f</format>
-	        <type>float</type>
-	        <node>/consumables/fuel/total-fuel-gals</node>
-	    </chunk>
-	    <chunk>
-	        <name>total-fuel-lbs</name>
-	        <format>%f</format>
-	        <type>float</type>
-	        <node>/consumables/fuel/total-fuel-lbs</node>
+	    <chunk>  
+	        <name>fuelDensityPPG = 6.0</name>  
+	        <format>%f</format>  
+	        <type>float</type>  
+	        <node>/consumables/fuel/tank[0]/density-ppg</node>  
 	    </chunk>
 
             <chunk>
@@ -216,12 +209,12 @@
                 <node>/sim/description</node>
             </chunk>
             <!--airplaneType = ""-->
-	    <chunk>  
-	        <name>airplaneModel = ""</name>  
-	        <format>%s</format>  
-	        <type>string</type>  
-	        <node>/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model</node>  
-	    </chunk>
+	    <chunk>
+                <name>airplaneModel = ""</name>
+                <format>%s</format>
+                <type>string</type>
+                <node>/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model</node>
+            </chunk>
             <chunk>
                 <name>airplaneReg = ""</name>
                 <format>%s</format>

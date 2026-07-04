@@ -102,6 +102,11 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
           # --- CALCULATE FUEL FLOW AND LEVEL ---
           fuel_flow_gph = 0.0
           fuel_level_gal = 0.0
+          
+          # Fetch aircraft fuel density once from tank[0], default to AvGas (6.0) if missing
+          density_ppg = float(rxAirplaneData.get("/consumables/fuel/tank[0]/density-ppg", 6.0))
+          if density_ppg <= 0.0: 
+              density_ppg = 6.0
 
           for i in range(4):
               # Because lib/fg.py maps using `nNode`, we query the exact XML node paths
@@ -121,6 +126,9 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
           # Map values back to memAirplane for LittleNavMap serialization
           memAirplane['fuelFlowGPH'] = fuel_flow_gph
           memAirplane['fuelTotalQuantityGallons'] = fuel_level_gal
+          # Calculate weight metrics required by LNM's AircraftPerfHandler
+          memAirplane['fuelFlowPPH'] = fuel_flow_gph * density_ppg
+          memAirplane['fuelTotalWeightLbs'] = fuel_level_gal * density_ppg
           # -------------------------------------
 
           if verbose:
