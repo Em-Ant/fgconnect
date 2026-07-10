@@ -111,7 +111,7 @@ class FlightGearConnect:
     aiKeys = {}
     for k in ai.keys():
       s = k.split("/")[0:4]
-      if "aircraft" in s[3]:
+      if "aircraft" in s[3] or "multiplayer" in s[3]:
         newKey = "/".join(s)
         aiKeys[newKey] = 1
     for aiKey in aiKeys.keys():
