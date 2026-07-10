@@ -22,6 +22,10 @@ Achieving full telemetry tracking in Little Navmap (LNM) requires tight coordina
    * *The Problem:* Legacy fuel mapping relied heavily on FDM-specific property trees (like `/fdm/jsbsim/...`), completely breaking fuel flow and tank telemetry for non-JSBSim aircraft.
    * *The Fix:* Shifted fuel analytics to a dynamic calculation layer. By collaborating with an updated array structure in the XML protocol, the Python script now dynamically iterates through up to 4 engines and 4 fuel tanks. It checks active engine `running` states, tracks selected tanks, and aggregates total Fuel Flow (GPH/PPH) using live fuel density (`density-ppg`) telemetry.
 
+4. **Multiplayer Aircraft Traffic Support**
+   * *The Problem:* fgconnect only detected AI aircraft because the property‑tree filter in lib/fg.py excluded the /ai/models/multiplayer branch. As a result, human‑controlled aircraft never appeared in Little Navmap, and missing fields in multiplayer nodes caused occasional crashes.
+   * *The Fix:* The connector now recognizes multiplayer aircraft by expanding the path filter to include the multiplayer branch. The translation layer in lib/helper.py was updated to safely handle missing identifiers using .get(), ensuring stable processing even when pilots have no flight plan. This enables full multiplayer visibility in Little Navmap without breaking the binary protocol.
+
 ---
 # About
 
