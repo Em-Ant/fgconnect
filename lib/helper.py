@@ -92,6 +92,8 @@ def translateToAI( fgAllData ):
   myAI = []
   for ii in range(len(fgAllData)):
     fgData = fgAllData[ii]
+    isCarrier = fgData.get("isCarrier", False)    
+    categoryByte = 3 if isCarrier else 0  
     myAirplane = { "objectID"                   : fgData["id"],
                    "shortFlags"                 : 0x0040,
                    "lonx"                       : fgData["position/longitude-deg"],
@@ -128,6 +130,7 @@ def translateToAI( fgAllData ):
                    "ambientVisibilityMeter"     : 0.0,
                    "trackMagDeg"                : 0.0,
                    "trackTrueDeg"               : 0.0,
+                   "categoryByte"               : categoryByte,
                  }
     myAI.append(myAirplane)
   return myAI

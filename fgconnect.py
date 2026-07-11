@@ -140,7 +140,7 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
                   f"flow={fuel_flow_gph:.1f} gph, fuel={fuel_level_gal:.1f} gal")
             
         # Translate AI data FlightGear to LittleNavMap
-        if rxAIData:
+        if rxAIData is not None:
           memAI = translateToAI(rxAIData)
           if verbose and memAI:
             a = memAI[0]
