@@ -1,8 +1,8 @@
 # FGconnect (Unified Patched Edition) 🚀
 
-This branch (`combined-fixes`) serves as a consolidated reference environment for `fgconnect`. It resolves upstream merge conflicts and unites three critical tracking and telemetry fixes into a single, functional runtime. 
+This branch (`combined-fixes`) serves as a consolidated reference environment for `fgconnect`. It resolves upstream merge conflicts and unites fout critical tracking and telemetry fixes into a single, functional runtime. 
 
-If you are looking for isolated implementations to review or merge individually, please refer to the standalone feature branches (`status-fix`, `plane-icao`, and `fuel`).
+If you are looking for isolated implementations to review or merge individually, please refer to the standalone feature branches (`status-fix`, `plane-icao`, `fuel` and `traffic`).
 
 ---
 
@@ -25,6 +25,11 @@ Achieving full telemetry tracking in Little Navmap (LNM) requires tight coordina
 4. **Multiplayer Aircraft Traffic Support**
    * *The Problem:* fgconnect only detected AI aircraft because the property‑tree filter in lib/fg.py excluded the /ai/models/multiplayer branch. As a result, human‑controlled aircraft never appeared in Little Navmap, and missing fields in multiplayer nodes caused occasional crashes.
    * *The Fix:* The connector now recognizes multiplayer aircraft by expanding the path filter to include the multiplayer branch. The translation layer in lib/helper.py was updated to safely handle missing identifiers using .get(), ensuring stable processing even when pilots have no flight plan. This enables full multiplayer visibility in Little Navmap without breaking the binary protocol.
+
+5. **AI Carrier Support, Ghost Filtering & Resiliency**
+   * *The Problem:* Phantom "Number: 0" carrier icons permanently froze on the LNM canvas after FlightGear stopped streaming them due to an implicit truthiness bug in the Python cache loop. Furthermore, rapidly toggling AI scenarios inside FlightGear often caused property desyncs, generating orphaned targets with uninitialized IDs (`0` or `-1`) that crashed the worker process.
+   * *The Fix:* Corrected the main loop to use an explicit `is not None` check, allowing explicit empty ticks to cleanly wipe the cache. Built a robust filter to automatically strip out `0` and `-1` IDs, safeguarding the worker against rapid-toggle simulator glitches. 
+   * *Iconography & Limits:* Integrated dynamic carrier detection mapping to `categoryByte = 3`, enabling LNM to natively draw ship symbols instead of aircraft. *(Note: AI scenario carriers fallback to 360° heading and 10 kts due to internal FlightGear telemetry limitations, which are handled gracefully out-of-scope).*
 
 ---
 # About
