@@ -111,7 +111,7 @@ class FlightGearConnect:
     aiKeys = {}
     for k in ai.keys():
       s = k.split("/")[0:4]
-      if "aircraft" in s[3] or "multiplayer" in s[3]:
+      if "aircraft" in s[3] or "multiplayer" in s[3] or "carrier" in s[3]:
         newKey = "/".join(s)
         aiKeys[newKey] = 1
     for aiKey in aiKeys.keys():
@@ -124,11 +124,17 @@ class FlightGearConnect:
     retPlanes = []
     for ii in range(len(AIPlanes)):
       aiKey = AIPlanes[ii][1]
+      plane_id = ai.get(aiKey + "/id")
+      id_str = str(plane_id).strip()
+      if id_str in ("0", "-1", "0.0", "-1.0"):  
+        continue  # Skip disabled/invalid aircraft or carriers
       addPlane = {}
       for k in ai:
         if aiKey in k:
           newKey = k[1+len(aiKey):]
           addPlane[newKey] = ai[k]
+      isCarrier = "carrier" in aiKey.lower()  
+      addPlane["isCarrier"] = isCarrier  
       retPlanes.append(addPlane)
     return retPlanes
 

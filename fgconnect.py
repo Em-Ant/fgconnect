@@ -104,7 +104,7 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
                   f"vs={memAirplane.get('verticalSpeedFeetPerMin',0):.1f} fpm, "
                   f"lat={memAirplane.get('laty',0):.4f}, lon={memAirplane.get('lonx',0):.4f}")
         # Translate AI data FlightGear to LittleNavMap
-        if rxAIData:
+        if rxAIData is not None:
           memAI = translateToAI(rxAIData)
           if verbose and memAI:
             a = memAI[0]
