@@ -89,7 +89,7 @@ def translateToAI( fgAllData ):
                    "groundAltitudeFt"           : fgData["position/altitude-ft"],
                    "flightNr"                   : fgData["callsign"],
                    "groundSpeedKts"             : fgData["velocities/true-airspeed-kt"],
-                   "verticalSpeedFeetPerMin"    : fgData["velocities/vertical-speed-fps"]/60.0,
+                   "verticalSpeedFeetPerMin"    : fgData["velocities/vertical-speed-fps"]*60.0,
                    "reg"                        : fgData["callsign"],
                    "model"                      : "AI",
                    "type"                       : "",
