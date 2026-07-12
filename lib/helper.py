@@ -76,29 +76,40 @@ def translateToAI( fgAllData ):
   for ii in range(len(fgAllData)):
     fgData = fgAllData[ii]
     isCarrier = fgData.get("isCarrier", False)    
-    categoryByte = 3 if isCarrier else 0  
+    categoryByte = 3 if isCarrier else 0  # 3 is verified for maritime/ship targets
+    
+    # 1. Safely extract and convert True Heading to float
+    try:
+        heading_true = float(fgData.get("orientation/true-heading-deg", 0.0))
+    except (ValueError, TypeError):
+        heading_true = 0.0
+
+    # 2. Extract Speed (uses true-airspeed-kt as fallback base for total visibility)
+    speed_base = fgData.get("velocities/true-airspeed-kt", fgData.get("velocities/speed-kts", 0.0))
+
     myAirplane = { "objectID"                   : fgData["id"],
                    "shortFlags"                 : 0x0040,
                    "lonx"                       : fgData["position/longitude-deg"],
                    "laty"                       : fgData["position/latitude-deg"],
-                   "headingTrueDeg"             : fgData["orientation/true-heading-deg"],
+                   "headingTrueDeg"             : heading_true,
                    "fromIdent"                  : fgData.get("departure-airport-id", ""),  
                    "toIdent"                    : fgData.get("arrival-airport-id", ""),
                    "altitude"                   : fgData["position/altitude-ft"],
                    "altitudeAboveGroundFt"      : fgData["position/altitude-ft"],
                    "groundAltitudeFt"           : fgData["position/altitude-ft"],
                    "flightNr"                   : fgData["callsign"],
-                   "groundSpeedKts"             : fgData["velocities/true-airspeed-kt"],
+                   "groundSpeedKts"             : speed_base, # Satisfies map labels
                    "verticalSpeedFeetPerMin"    : fgData["velocities/vertical-speed-fps"]*60.0,
                    "reg"                        : fgData["callsign"],
                    "model"                      : "AI",
                    "type"                       : "",
                    "airline"                    : "",
                    "title"                      : "",
-                   "headingMagDeg"              : 0.0,
-                   "indicatedAltitudeFt"        : 0.0,
-                   "indicatedSpeedKts"          : 0.0,
-                   "trueAirspeedKts"            : 0.0,
+                   # CRITICAL FIX: Use 999.0 so LNM falls back to calculating Mag Heading dynamically
+                   "headingMagDeg"              : 999.0 if not isCarrier else (heading_true - fgData.get("environment/magnetic-variation-deg", 0.0)) % 360.0,
+                   "indicatedAltitudeFt"        : fgData["position/altitude-ft"],
+                   "indicatedSpeedKts"          : speed_base, # Populates flying UI fields
+                   "trueAirspeedKts"            : speed_base, # Populates telemetry UI fields
                    "machSpeed"                  : 0.0,
                    "windSpeedKts"               : 0.0,
                    "windDirectionDegT"          : 0.0,
