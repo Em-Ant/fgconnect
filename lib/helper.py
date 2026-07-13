@@ -34,6 +34,23 @@ def translateToAirplane( fgData ):
     airplaneTotalWeightLbs = fgData["/fdm/yasim/gross-weight-lbs"]
     fuelFlowGPH            = fgData["/engines/engine/fuel-flow-gph"]
     fuelFlowPPH            = fgData["/engines/engine[1]/fuel-flow-gph"]  # FIXME
+
+  # Extract title once for both helicopter check and dictionary  
+  title = fgData["/sim/description"]  
+
+  # Helicopter override logic (uses title)  
+  categoryByte = 0  # Default to Airplane  
+  if title:  
+    try:  
+      if os.path.exists("helicopters.txt"):  
+        with open("helicopters.txt", "r", encoding="utf-8") as f:  
+          heli_titles = [line.strip() for line in f if line.strip()]  
+          if any(heli.lower() == title.lower() for heli in heli_titles):  
+            categoryByte = 1  
+    except Exception:  
+      pass  
+
+
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
                   "altitude"                   : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
@@ -61,6 +78,7 @@ def translateToAirplane( fgData ):
                  "trackMagDeg"                : fgData["/orientation/track-magnetic-deg"],
                  "trackTrueDeg"               : fgData["/orientation/true-heading-deg"],
                  "title"                      : fgData["/sim/description"],
+                 "categoryByte"               : categoryByte,  
                  "model"                      : fgData["/sim/aircraft"],
                  "reg"                        : fgData["/sim/multiplay/callsign"],
                  "type"                       : "",
