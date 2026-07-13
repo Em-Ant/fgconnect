@@ -29,7 +29,11 @@ Achieving full telemetry tracking in Little Navmap (LNM) requires tight coordina
 5. **AI Carrier Support, Ghost Filtering & Resiliency**
    * *The Problem:* Phantom "Number: 0" carrier icons permanently froze on the LNM canvas after FlightGear stopped streaming them due to an implicit truthiness bug in the Python cache loop. Furthermore, rapidly toggling AI scenarios inside FlightGear often caused property desyncs, generating orphaned targets with uninitialized IDs (`0` or `-1`) that crashed the worker process.
    * *The Fix:* Corrected the main loop to use an explicit `is not None` check, allowing explicit empty ticks to cleanly wipe the cache. Built a robust filter to automatically strip out `0` and `-1` IDs, safeguarding the worker against rapid-toggle simulator glitches. 
-   * *Iconography & Limits:* Integrated dynamic carrier detection mapping to `categoryByte = 3`, enabling LNM to natively draw ship symbols instead of aircraft. *(Note: AI scenario carriers fallback to 360° heading and 10 kts due to internal FlightGear telemetry limitations, which are handled gracefully out-of-scope).*
+   * *Iconography & Limits:* Integrated dynamic carrier detection mapping to `categoryByte = 3`, enabling LNM to natively draw ship symbols instead of aircraft.
+
+6. **Localized Helicopter Icon Overrides**
+    * *The Problem:* Due to inconsistent data structures in FlightGear's hangar ecosystem, helicopter models rarely expose their proper type properties, causing them to show up on the map as standard airplanes.
+    * *The Fix:* Created a localized override mechanism via helicopters.txt. By matching the exact /sim/description string against this local file, the connector bypasses FlightGear's internal metadata omissions and cleanly updates the serialization buffer with the proper helicopter category byte.
 
 ---
 # About

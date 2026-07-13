@@ -50,6 +50,21 @@ def translateToAirplane( fgData ):
   if on_ground_alt and not (gs_flying or vs_flying):
     shortFlags |= 0x0001
   
+  # Extract title once for both helicopter check and dictionary  
+  title = fgData["/sim/description"]  
+
+  # Helicopter override logic (uses title)  
+  categoryByte = 0  # Default to Airplane  
+  if title:  
+    try:  
+      if os.path.exists("helicopters.txt"):  
+        with open("helicopters.txt", "r", encoding="utf-8") as f:  
+          heli_titles = [line.strip() for line in f if line.strip()]  
+          if any(heli.lower() == title.lower() for heli in heli_titles):  
+            categoryByte = 1  
+    except Exception:  
+      pass  
+
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
                  "altitude"                   : fgData["/instrumentation/altimeter/indicated-altitude-ft"],
@@ -78,6 +93,7 @@ def translateToAirplane( fgData ):
                  "trackMagDeg"                : fgData["/orientation/track-magnetic-deg"],
                  "trackTrueDeg"               : fgData["/orientation/true-heading-deg"],
                  "title"                      : fgData["/sim/description"],
+                 "categoryByte"               : categoryByte,  
                  "model" : fgData["/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model"],
                  "reg"                        : fgData["/sim/multiplay/callsign"],
                  "type"                       : "",
