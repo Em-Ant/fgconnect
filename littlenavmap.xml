@@ -15,7 +15,7 @@
             </chunk>
             <chunk>
                 <name>local-offset</name>
-                <type>integer</type>
+                <type>int</type>
                 <format>%d</format>
                 <node>/sim/time/local-offset</node>
             </chunk>
@@ -74,53 +74,108 @@
             <!--airplaneMaxGrossWeightLbs = 0.f-->
             <!--airplaneEmptyWeightLbs = 0.f-->
             <chunk>
-                <name>fuelTotalQuantityGallons = 0.f</name>
+                <name>fuelFlowGPH engine 0 = 0.f</name>
                 <format>%f</format>
                 <type>float</type>
-                <node>/consumables/fuel/total-fuel-gals</node>
+                <node>/engines/engine[0]/fuel-flow-gph</node>
             </chunk>
             <chunk>
-                <name>fuelTotalWeightLbs = 0.f</name>
-                <format>%f</format>
-                <type>float</type>
-                <node>/consumables/fuel/total-fuel-lbs</node>
-            </chunk>
-            <chunk>
-                <name>fuelFlowGPH (jsbsim) = 0.f</name>
-                <format>%f</format>
-                <type>float</type>
-                <node>/fdm/jsbsim/propulsion/engine/fuel-flow-rate-gph</node>
-            </chunk>
-            <chunk>
-                <name>fuelFlowPPH (in PPS from jsbsim) = 0.f</name>
-                <format>%f</format>
-                <type>float</type>
-                <node>/fdm/jsbsim/propulsion/engine/fuel-flow-rate-pps</node>
-            </chunk>
-            <chunk>
-                <name>fuelFlowGPH (yasim) engine 0 = 0.f</name>
-                <format>%f</format>
-                <type>float</type>
-                <node>/engines/engine/fuel-flow-gph</node>
-            </chunk>
-            <chunk>
-                <name>fuelFlowGPH (yasim) engine 1 = 0.f</name>
+                <name>fuelFlowGPH engine 1 = 0.f</name>
                 <format>%f</format>
                 <type>float</type>
                 <node>/engines/engine[1]/fuel-flow-gph</node>
             </chunk>
             <chunk>
-                <name>fuelFlowGPH (yasim) engine 2 = 0.f</name>
+                <name>fuelFlowGPH engine 2 = 0.f</name>
                 <format>%f</format>
                 <type>float</type>
                 <node>/engines/engine[2]/fuel-flow-gph</node>
             </chunk>
             <chunk>
-                <name>fuelFlowGPH (yasim) engine 3 = 0.f</name>
+                <name>fuelFlowGPH engine 3 = 0.f</name>
                 <format>%f</format>
                 <type>float</type>
                 <node>/engines/engine[3]/fuel-flow-gph</node>
             </chunk>
+	    <chunk>  
+	        <name>engineRunning 0 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/engines/engine[0]/running</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>engineRunning 1 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/engines/engine[1]/running</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>engineRunning 2 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/engines/engine[2]/running</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>engineRunning 3 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/engines/engine[3]/running</node>  
+	    </chunk>
+
+	    <chunk>  
+	        <name>fuelTankLevelGallons 0 = 0.f</name>  
+	        <format>%f</format>  
+	        <type>float</type>  
+	        <node>/consumables/fuel/tank[0]/level-gal_us</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelTankLevelGallons 1 = 0.f</name>  
+	        <format>%f</format>  
+	        <type>float</type>  
+	        <node>/consumables/fuel/tank[1]/level-gal_us</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelTankLevelGallons 2 = 0.f</name>  
+	        <format>%f</format>  
+	        <type>float</type>  
+	        <node>/consumables/fuel/tank[2]/level-gal_us</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelTankLevelGallons 3 = 0.f</name>  
+	        <format>%f</format>  
+	        <type>float</type>  
+	        <node>/consumables/fuel/tank[3]/level-gal_us</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelTankSelected 0 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/consumables/fuel/tank[0]/selected</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelTankSelected 1 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/consumables/fuel/tank[1]/selected</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelTankSelected 2 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/consumables/fuel/tank[2]/selected</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelTankSelected 3 = false</name>  
+	        <format>%d</format>  
+	        <type>int</type>  
+	        <node>/consumables/fuel/tank[3]/selected</node>  
+	    </chunk>
+	    <chunk>  
+	        <name>fuelDensityPPG = 6.0</name>  
+	        <format>%f</format>  
+	        <type>float</type>  
+	        <node>/consumables/fuel/tank[0]/density-ppg</node>  
+	    </chunk>
 
             <chunk>
                 <name>magVarDeg = 0.f</name>
@@ -154,11 +209,11 @@
                 <node>/sim/description</node>
             </chunk>
             <!--airplaneType = ""-->
-            <chunk>
+	    <chunk>
                 <name>airplaneModel = ""</name>
                 <format>%s</format>
                 <type>string</type>
-                <node>/sim/aircraft</node>
+                <node>/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model</node>
             </chunk>
             <chunk>
                 <name>airplaneReg = ""</name>

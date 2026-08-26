@@ -94,23 +94,60 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
         # Read data AI airplanes
         if not AIEvtQ.empty():
           rxAIData = AIEvtQ.get()
+          
         # Translate my own Airplane data FlightGear to LittleNavMap
         if rxAirplaneData:
           memAirplane = translateToAirplane(rxAirplaneData)
+          
+          # --- CALCULATE FUEL FLOW AND LEVEL ---
+          fuel_flow_gph = 0.0
+          fuel_level_gal = 0.0
+          
+          # Fetch aircraft fuel density once from tank[0], default to AvGas (6.0) if missing
+          density_ppg = float(rxAirplaneData.get("/consumables/fuel/tank[0]/density-ppg", 6.0))
+          if density_ppg <= 0.0: 
+              density_ppg = 6.0
+
+          for i in range(4):
+              # Because lib/fg.py maps using `nNode`, we query the exact XML node paths
+              flow = float(rxAirplaneData.get(f"/engines/engine[{i}]/fuel-flow-gph", 0.0))
+              running = rxAirplaneData.get(f"/engines/engine[{i}]/running", 0)
+              
+              # FlightGear natively exports bools as 1/0 or 'true' via %d/%s
+              if str(running).strip().lower() in ['1', 'true', 'yes', 't']: 
+                  fuel_flow_gph += flow
+              
+              level = float(rxAirplaneData.get(f"/consumables/fuel/tank[{i}]/level-gal_us", 0.0))
+              selected = rxAirplaneData.get(f"/consumables/fuel/tank[{i}]/selected", 0)
+              
+              if str(selected).strip().lower() in ['1', 'true', 'yes', 't']: 
+                  fuel_level_gal += level
+
+          # Map values back to memAirplane for LittleNavMap serialization
+          memAirplane['fuelFlowGPH'] = fuel_flow_gph
+          memAirplane['fuelTotalQuantityGallons'] = fuel_level_gal
+          # Calculate weight metrics required by LNM's AircraftPerfHandler
+          memAirplane['fuelFlowPPH'] = fuel_flow_gph * density_ppg
+          memAirplane['fuelTotalWeightLbs'] = fuel_level_gal * density_ppg
+          # -------------------------------------
+
           if verbose:
             print(f"USER: alt={memAirplane.get('altitude','MISSING'):.1f} ft, "
                   f"agl={memAirplane.get('altitudeAboveGroundFt',0):.1f} ft, "
                   f"ground={memAirplane.get('groundAltitudeFt',0):.1f} ft, "
                   f"vs={memAirplane.get('verticalSpeedFeetPerMin',0):.1f} fpm, "
-                  f"lat={memAirplane.get('laty',0):.4f}, lon={memAirplane.get('lonx',0):.4f}")
+                  f"lat={memAirplane.get('laty',0):.4f}, lon={memAirplane.get('lonx',0):.4f}, "
+                  f"flow={fuel_flow_gph:.1f} gph, fuel={fuel_level_gal:.1f} gal")
+            
         # Translate AI data FlightGear to LittleNavMap
-        if rxAIData:
+        if rxAIData is not None:
           memAI = translateToAI(rxAIData)
           if verbose and memAI:
             a = memAI[0]
             print(f"AI[0]: alt={a.get('altitude','MISSING')} ft, "
                   f"vs={a.get('verticalSpeedFeetPerMin',0):.1f} fpm, "
                   f"lat={a.get('laty',0):.4f}, lon={a.get('lonx',0):.4f}")
+                  
         # Serialize and packetize data
         lnm.serializeBuffer(memAirplane, memAI)
         # Send data to LittleNavMap
@@ -205,4 +242,3 @@ if __name__ == '__main__':
     from gui_tk import *
     app = MainApp()
     app.mainloop()
-
