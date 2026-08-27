@@ -1,41 +1,3 @@
-# FGconnect (Unified Patched Edition) 🚀
-
-This branch (`combined-fixes`) serves as a consolidated reference environment for `fgconnect`. It resolves upstream merge conflicts and unites fout critical tracking and telemetry fixes into a single, functional runtime. 
-
-If you are looking for isolated implementations to review or merge individually, please refer to the standalone feature branches (`status-fix`, `plane-icao`, `fuel` and `traffic`).
-
----
-
-### 🛠️ Summary of Combined Fixes & Cross-Repo Collaboration
-
-Achieving full telemetry tracking in Little Navmap (LNM) requires tight coordination between this Python connector framework and the XML network protocol emitter inside [flightgear-addon-littlenavmap](https://github.com/jimishol/flightgear-addon-littlenavmap/tree/combined-fixes). This branch unifies the following enhancements:
-
-1. **Ground Status Fix**
-   * *The Problem:* Flight telemetry consistently locked the aircraft state to "on the ground," failing to trigger active flight log profiling in LNM.
-   * *The Fix:* Corrected the status evaluation logic inside the connector loop to properly track live airborne transitions.
-
-2. **ICAO Aircraft Model Alignment**
-   * *The Problem:* Mismatched or missing aircraft type designators caused LNM to render generic fallback models.
-   * *The Fix:* Synchronized string parsing between the XML payload and the Python connector to ensure proper ICAO companion mapping.
-
-3. **Universal Fuel & Performance Telemetry (FDM-Independent)**
-   * *The Problem:* Legacy fuel mapping relied heavily on FDM-specific property trees (like `/fdm/jsbsim/...`), completely breaking fuel flow and tank telemetry for non-JSBSim aircraft.
-   * *The Fix:* Shifted fuel analytics to a dynamic calculation layer. By collaborating with an updated array structure in the XML protocol, the Python script now dynamically iterates through up to 4 engines and 4 fuel tanks. It checks active engine `running` states, tracks selected tanks, and aggregates total Fuel Flow (GPH/PPH) using live fuel density (`density-ppg`) telemetry.
-
-4. **Multiplayer Aircraft Traffic Support**
-   * *The Problem:* fgconnect only detected AI aircraft because the property‑tree filter in lib/fg.py excluded the /ai/models/multiplayer branch. As a result, human‑controlled aircraft never appeared in Little Navmap, and missing fields in multiplayer nodes caused occasional crashes.
-   * *The Fix:* The connector now recognizes multiplayer aircraft by expanding the path filter to include the multiplayer branch. The translation layer in lib/helper.py was updated to safely handle missing identifiers using .get(), ensuring stable processing even when pilots have no flight plan. This enables full multiplayer visibility in Little Navmap without breaking the binary protocol.
-
-5. **AI Carrier Support, Ghost Filtering & Resiliency**
-   * *The Problem:* Phantom "Number: 0" carrier icons permanently froze on the LNM canvas after FlightGear stopped streaming them due to an implicit truthiness bug in the Python cache loop. Furthermore, rapidly toggling AI scenarios inside FlightGear often caused property desyncs, generating orphaned targets with uninitialized IDs (`0` or `-1`) that crashed the worker process.
-   * *The Fix:* Corrected the main loop to use an explicit `is not None` check, allowing explicit empty ticks to cleanly wipe the cache. Built a robust filter to automatically strip out `0` and `-1` IDs, safeguarding the worker against rapid-toggle simulator glitches. 
-   * *Iconography & Limits:* Integrated dynamic carrier detection mapping to `categoryByte = 3`, enabling LNM to natively draw ship symbols instead of aircraft.
-
-6. **Localized Helicopter Icon Overrides**
-    * *The Problem:* Due to inconsistent data structures in FlightGear's hangar ecosystem, helicopter models rarely expose their proper type properties, causing them to show up on the map as standard airplanes.
-    * *The Fix:* Created a localized override mechanism via helicopters.txt. By matching the exact /sim/description string against this local file, the connector bypasses FlightGear's internal metadata omissions and cleanly updates the serialization buffer with the proper helicopter category byte.
-
----
 # About
 
 This small program is used to connect the FlightGear flight simulator to the LittleNavMap.
@@ -84,6 +46,7 @@ python fgconnect.py --fgip 192.168.1.10 --lnmip 192.168.1.20 -s
 ```
 
 > **Note**: Use `-s` (stand-alone mode) to run without the GUI — useful for automation or servers.
+> **Optional**: insert your helicopter’s exact /sim/description string as a line in helicopters.txt so the model is recognized as a helicopter instead of a standard airplane.
 
 ### GUI Mode (Default)
 
