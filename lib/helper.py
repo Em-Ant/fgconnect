@@ -10,6 +10,9 @@ import os
 
 earthRadiusKm = 6373.0
 
+# Define C++ std::numeric_limits<float>::max() matching atools SC_INVALID_FLOAT
+FLOAT_INVALID = 3.4028235e+38
+
 # based on: https://stackoverflow.com/questions/19412462/getting-distance-between-two-points-based-on-latitude-longitude
 def distanceKm( p1, p2 ):
   lon1 = math.radians(p1[0])
@@ -23,6 +26,20 @@ def distanceKm( p1, p2 ):
   c    = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
   
   return earthRadiusKm * c
+
+HELICOPTER_TITLES = set()
+
+def load_helicopter_list():
+    global HELICOPTER_TITLES
+    if os.path.exists("helicopters.txt"):
+        try:
+            with open("helicopters.txt", "r", encoding="utf-8") as f:
+                HELICOPTER_TITLES = {line.strip().lower() for line in f if line.strip()}
+        except Exception:
+            HELICOPTER_TITLES = set()
+
+# Load file contents into memory ONCE at script startup
+load_helicopter_list()
 
 def translateToAirplane( fgData ):
   flightModel = fgData["/sim/flight-model"]
@@ -53,17 +70,10 @@ def translateToAirplane( fgData ):
   # Extract title once for both helicopter check and dictionary  
   title = fgData["/sim/description"]  
 
-  # Helicopter override logic (uses title)  
+  # Helicopter override logic (blazingly fast in-memory check, uses title)
   categoryByte = 0  # Default to Airplane  
-  if title:  
-    try:  
-      if os.path.exists("helicopters.txt"):  
-        with open("helicopters.txt", "r", encoding="utf-8") as f:  
-          heli_titles = [line.strip() for line in f if line.strip()]  
-          if any(heli.lower() == title.lower() for heli in heli_titles):  
-            categoryByte = 1  
-    except Exception:  
-      pass  
+  if title and title.lower() in HELICOPTER_TITLES:  
+      categoryByte = 1
 
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
@@ -138,8 +148,8 @@ def translateToAI( fgAllData ):
                    "type"                       : "",
                    "airline"                    : "",
                    "title"                      : "",
-                   # CRITICAL FIX: Use 999.0 so LNM falls back to calculating Mag Heading dynamically
-                   "headingMagDeg"              : 999.0 if not isCarrier else (heading_true - fgData.get("environment/magnetic-variation-deg", 0.0)) % 360.0,
+                   # Use float32 max sentinel so LNM falls back to calculating Mag Heading dynamically
+                   "headingMagDeg"              : FLOAT_INVALID if not isCarrier else (heading_true - fgData.get("environment/magnetic-variation-deg", 0.0)) % 360.0,
                    "indicatedAltitudeFt"        : fgData["position/altitude-ft"],
                    "indicatedSpeedKts"          : speed_base, # Populates flying UI fields
                    "trueAirspeedKts"            : speed_base, # Populates telemetry UI fields
