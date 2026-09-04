@@ -27,6 +27,20 @@ def distanceKm( p1, p2 ):
   
   return earthRadiusKm * c
 
+HELICOPTER_TITLES = set()
+
+def load_helicopter_list():
+    global HELICOPTER_TITLES
+    if os.path.exists("helicopters.txt"):
+        try:
+            with open("helicopters.txt", "r", encoding="utf-8") as f:
+                HELICOPTER_TITLES = {line.strip().lower() for line in f if line.strip()}
+        except Exception:
+            HELICOPTER_TITLES = set()
+
+# Load file contents into memory ONCE at script startup
+load_helicopter_list()
+
 def translateToAirplane( fgData ):
   flightModel = fgData["/sim/flight-model"]
   if "jsb" in flightModel:
@@ -56,17 +70,10 @@ def translateToAirplane( fgData ):
   # Extract title once for both helicopter check and dictionary  
   title = fgData["/sim/description"]  
 
-  # Helicopter override logic (uses title)  
+  # Helicopter override logic (blazingly fast in-memory check, uses title)
   categoryByte = 0  # Default to Airplane  
-  if title:  
-    try:  
-      if os.path.exists("helicopters.txt"):  
-        with open("helicopters.txt", "r", encoding="utf-8") as f:  
-          heli_titles = [line.strip() for line in f if line.strip()]  
-          if any(heli.lower() == title.lower() for heli in heli_titles):  
-            categoryByte = 1  
-    except Exception:  
-      pass  
+  if title and title.lower() in HELICOPTER_TITLES:  
+      categoryByte = 1
 
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
