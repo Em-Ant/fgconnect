@@ -59,6 +59,16 @@ If no command-line arguments are provided (or `-s` is omitted), a Tkinter-based 
 
 Ensure both applications are running and ports are open/firewall-allowed.
 
+> **Note**: GUI mode needs a Python whose Tk works with your X server.
+> Some older `uv`-managed standalone builds (e.g. CPython 3.14.0rc1 with
+> bundled Tk 8.6.14) abort here with
+> `[xcb] Unknown sequence number while appending request`.
+> Keep `uv` current (`uv self update`) so managed interpreters resolve to
+> fixed releases (verified with 3.14.8 / Tk 9.0), or run the GUI with the
+> system Python instead, e.g. `/usr/bin/python3 fgconnect.py`
+> (needs `requests` + `xmltodict` installed).
+> Headless `-s` mode has no Tk dependency and works with any interpreter.
+
 ---
 
 ## Credits

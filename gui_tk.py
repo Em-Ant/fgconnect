@@ -6,9 +6,29 @@
 
 import tkinter as tk
 from tkinter import ttk
-from multiprocessing import Process, Value, Queue
+import multiprocessing as mp
 
-from fgconnect import processReadFromFlightGear, processReadAIFromFlightGear, processWriteToLittleNavMap
+from fgconnect import (
+    MP_CTX,
+    processReadFromFlightGear,
+    processReadAIFromFlightGear,
+    processWriteToLittleNavMap,
+)
+
+Process = MP_CTX.Process
+Queue = MP_CTX.Queue
+Value = MP_CTX.Value
+
+
+def stop_processes(procs, timeout=2):
+    """Wait briefly for each process, then terminate stragglers."""
+    for p in procs:
+        if p is None:
+            continue
+        p.join(timeout=timeout)
+        if p.is_alive():
+            p.terminate()
+            p.join(timeout=1)
 
 class MainApp(tk.Tk):
 
@@ -73,46 +93,68 @@ class MainApp(tk.Tk):
         canvas.itemconfig(1, fill=color)
 
     def start_fg(self):
-        if self.flag1 is None:
-            self.flag1 = Value("i", 0)
+        if self.flag1 is not None:
+            return
+        flag = Value("i", 0)
+        started = []
+        try:
             cfg1 = {"IP_ADDR": self.fg_ip.get(),
                     "UDP_PORT": int(self.fg_port.get()),
                     "sleepTime": 1/10.0,
                     "xmlCfgFile": "littlenavmap.xml"}
-            self.p1 = Process(target=processReadFromFlightGear,
-                              args=(self.flag1, self.myEvtQ, cfg1))
-            self.p1.start()
+            p1 = Process(target=processReadFromFlightGear,
+                         args=(flag, self.myEvtQ, cfg1),
+                         daemon=True)
+            p1.start()
+            started.append(p1)
             cfg0 = {"IP_ADDR": self.fg_ip.get(),
                     "UDP_PORT": 5400,
                     "sleepTime": 1/2.0}
-            self.p0 = Process(target=processReadAIFromFlightGear,
-                              args=(self.flag1, self.AIEvtQ, cfg0))
-            self.p0.start()
-            self.set_status(self.fg_status, "green")
+            p0 = Process(target=processReadAIFromFlightGear,
+                         args=(flag, self.AIEvtQ, cfg0),
+                         daemon=True)
+            p0.start()
+            started.append(p0)
+        except Exception:
+            flag.value = 1
+            stop_processes(started)
+            raise
+        self.flag1 = flag
+        self.p1, self.p0 = started
+        self.set_status(self.fg_status, "green")
 
     def stop_fg(self):
         if self.flag1 is not None:
             self.flag1.value = 1
-            self.p0.join()
-            self.p1.join()
+            stop_processes((self.p0, self.p1))
+            self.p0 = self.p1 = None
             self.flag1 = None
             self.set_status(self.fg_status, "red")
 
     def start_lnm(self):
-        if self.flag2 is None:
-            self.flag2 = Value("i", 0)
+        if self.flag2 is not None:
+            return
+        flag = Value("i", 0)
+        try:
             cfg = {"IP_ADDR": self.lnm_ip.get(),
                    "UDP_PORT": int(self.lnm_port.get()),
                    "sleepTime": 1/10.0}
-            self.p2 = Process(target=processWriteToLittleNavMap,
-                              args=(self.flag2, self.myEvtQ, self.AIEvtQ, cfg))
-            self.p2.start()
-            self.set_status(self.lnm_status, "green")
+            p2 = Process(target=processWriteToLittleNavMap,
+                         args=(flag, self.myEvtQ, self.AIEvtQ, cfg),
+                         daemon=True)
+            p2.start()
+        except Exception:
+            flag.value = 1
+            raise
+        self.flag2 = flag
+        self.p2 = p2
+        self.set_status(self.lnm_status, "green")
 
     def stop_lnm(self):
         if self.flag2 is not None:
             self.flag2.value = 1
-            self.p2.join()
+            stop_processes((self.p2,))
+            self.p2 = None
             self.flag2 = None
             self.set_status(self.lnm_status, "red")
 
@@ -123,5 +165,6 @@ class MainApp(tk.Tk):
 
 
 if __name__ == "__main__":
+    mp.freeze_support()
     app = MainApp()
     app.mainloop()
