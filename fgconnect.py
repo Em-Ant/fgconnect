@@ -5,7 +5,17 @@
 #                tiago.gasiba@gmail.com
 #
 ################################################################################
-from multiprocessing import Process, Value, Queue
+import multiprocessing as mp
+# Never fork() a process after Tk has initialized X11/XCB (XInitThreads):
+# the child inherits the X connection and the parent then aborts with
+# "[xcb] Unknown sequence number while appending request" (xcb_io.c).
+# An explicit "spawn" context starts fresh interpreters without inheriting
+# the X connection. It is also immune to Python 3.14 changing the default
+# start method from "fork" to "forkserver".
+MP_CTX = mp.get_context("spawn")
+Process = MP_CTX.Process
+Queue = MP_CTX.Queue
+Value = MP_CTX.Value
 from lib.fg          import FlightGearConnect
 from lib.lnm         import LittleNavMapConnect
 from lib.helper      import *
@@ -25,16 +35,20 @@ def processReadFromFlightGear(stopSignal, evtQ, pCfg):
   fgCon      = FlightGearConnect(xmlCfgFile)
   sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  sock.bind( (fgIP_ADDR, fgUDP_PORT) )
+  try:
+    sock.bind( (fgIP_ADDR, fgUDP_PORT) )
+  except OSError as e:
+    print(f"ERROR processReadFromFlightGear: cannot bind {(fgIP_ADDR, fgUDP_PORT)}: {e}")
+    return
   sock.setblocking(0)
   rxAirplaneData = None
   while 0==stopSignal.value:
     try:
       data, addr = sock.recvfrom(16384)
-    except socket.error:
-      rxAirplaneData = None
-    else:
       rxAirplaneData = fgCon.parseUDPPacket(data)
+    except Exception:
+      # No data (or malformed packet): keep the loop alive, report nothing.
+      rxAirplaneData = None
     if (not evtQ.full()) and (rxAirplaneData!= None):
       evtQ.put( rxAirplaneData )
       rxAirplaneData= None
@@ -48,13 +62,19 @@ def processReadAIFromFlightGear(stopSignal, evtQ, pCfg):
   fgCon      = FlightGearConnect(None, fgIP_ADDR, 5400)
   sock = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  sock.bind( (fgIP_ADDR, fgUDP_PORT) )
+  try:
+    sock.bind( (fgIP_ADDR, fgUDP_PORT) )
+  except OSError as e:
+    print(f"ERROR processReadAIFromFlightGear: cannot bind {(fgIP_ADDR, fgUDP_PORT)}: {e}")
+    return
   sock.setblocking(0)
   rxAIData = None
   while 0==stopSignal.value:
     try:
       rxAIData = fgCon.loadNAIAirplanes(nAIPlanes)
-    except socket.error:
+    except Exception:
+      # FlightGear down / bad reply: requests raises ConnectionError,
+      # Timeout, JSON or KeyError (not socket.error). Stay alive, retry.
       rxAIData = None
     if (not evtQ.full()) and (rxAIData != None):
       evtQ.put( rxAIData )
@@ -75,7 +95,11 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
   
   # Connect the socket to the port where the server is listening
   server_address = ('localhost', 51968)
-  sock.bind( (lnmIP_ADDR, lnmUDP_PORT) )
+  try:
+    sock.bind( (lnmIP_ADDR, lnmUDP_PORT) )
+  except OSError as e:
+    print(f"ERROR processWriteToLittleNavMap: cannot bind {(lnmIP_ADDR, lnmUDP_PORT)}: {e}")
+    return
   
   # Listen for incoming connections
   sock.listen(1)
@@ -85,7 +109,13 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
   memAirplane    = {}
   memAI          = []
   while 0==stopSignal.value:
-    conn, clientAddr = sock.accept()
+    try:
+      conn, clientAddr = sock.accept()
+    except OSError:
+      # Listener hiccup: retry unless asked to stop.
+      if 0==stopSignal.value:
+        time.sleep(0.5)
+      continue
     try:
       while 0==stopSignal.value:
         # Read data about my own Airplane
@@ -159,8 +189,15 @@ def processWriteToLittleNavMap(stopSignal, myEvtQ, AIEvtQ, pCfg):
         # Reset received data
         rxAirplaneData = None
         rxAIData       = None
+    except Exception:
+      # Client disconnected, sent garbage, or data failed to translate:
+      # drop this connection and wait for the next one instead of dying.
+      pass
     finally:
-      conn.close()
+      try:
+        conn.close()
+      except OSError:
+        pass
 
 if __name__ == '__main__':
   standAloneMode = False
@@ -173,7 +210,7 @@ if __name__ == '__main__':
 
   verbose = False
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "hsv", ["help", "verbose", "lnmip", "lnmpt", "fgip", "fglnmpt", "fghttppt"])
+    opts, args = getopt.getopt(sys.argv[1:], "hsv", ["help", "verbose", "lnmip=", "lnmpt=", "fgip=", "fglnmpt=", "fghttppt="])
   except getopt.GetoptError as err:
     print(err)
     sys.exit(2)
@@ -216,14 +253,14 @@ if __name__ == '__main__':
              "sleepTime"  : 1/10.0,
              "xmlCfgFile" : "littlenavmap.xml",
            }
-    p1 = Process( target=processReadFromFlightGear, args=(flag1, myEvtQ, pCfg) )
+    p1 = Process( target=processReadFromFlightGear, args=(flag1, myEvtQ, pCfg), daemon=True )
     p1.start()
     #############
     pCfg = { "IP_ADDR"    : fgIP,
              "UDP_PORT"   : fghttpPT,
              "sleepTime"  : 1/2.0,
            }
-    p0 = Process( target=processReadAIFromFlightGear, args=(flag1, AIEvtQ, pCfg) )
+    p0 = Process( target=processReadAIFromFlightGear, args=(flag1, AIEvtQ, pCfg), daemon=True )
     p0.start()
     #############
     flag2 = Value("i",0)
@@ -232,13 +269,29 @@ if __name__ == '__main__':
              "sleepTime"  : 1/10.0,
              "verbose"    : verbose,
            }
-    p2 = Process( target=processWriteToLittleNavMap, args=(flag2, myEvtQ, AIEvtQ, pCfg) )
+    p2 = Process( target=processWriteToLittleNavMap, args=(flag2, myEvtQ, AIEvtQ, pCfg), daemon=True )
     p2.start()
+    #############
+    # Fail fast if a worker died on startup (e.g. port already in use:
+    # bind errors happen before the worker loop and would otherwise leave
+    # the tool running degraded with no data flowing).
+    procs = (p0, p1, p2)
+    time.sleep(2.0)
+    if any(not p.is_alive() for p in procs):
+      print("ERROR: a worker process died on startup (is a port already in use?). Stopping.")
+      flag1.value = 1
+      flag2.value = 1
+      for p in procs:
+        p.join(timeout=2)
+        if p.is_alive():
+          p.terminate()
+      sys.exit(1)
     #############
     while True:
       time.sleep(4)
 
   else:
-    from gui_tk import *
+    mp.freeze_support()
+    from gui_tk import MainApp
     app = MainApp()
     app.mainloop()

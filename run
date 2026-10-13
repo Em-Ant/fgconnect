@@ -1,4 +1,4 @@
 #!/bin/bash
 
-uv run ./fgconnect.py
+uv run ./fgconnect.py "$@"
 
