@@ -7,8 +7,12 @@
 import pprint
 import math
 import os
+from datetime import datetime, timezone, timedelta
 
 earthRadiusKm = 6373.0
+
+# Define C++ std::numeric_limits<float>::max() matching atools SC_INVALID_FLOAT
+FLOAT_INVALID = 3.4028235e+38
 
 # based on: https://stackoverflow.com/questions/19412462/getting-distance-between-two-points-based-on-latitude-longitude
 def distanceKm( p1, p2 ):
@@ -23,6 +27,20 @@ def distanceKm( p1, p2 ):
   c    = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
   
   return earthRadiusKm * c
+
+HELICOPTER_TITLES = set()
+
+def load_helicopter_list():
+    global HELICOPTER_TITLES
+    if os.path.exists("helicopters.txt"):
+        try:
+            with open("helicopters.txt", "r", encoding="utf-8") as f:
+                HELICOPTER_TITLES = {line.strip().lower() for line in f if line.strip()}
+        except Exception:
+            HELICOPTER_TITLES = set()
+
+# Load file contents into memory ONCE at script startup
+load_helicopter_list()
 
 def translateToAirplane( fgData ):
   flightModel = fgData["/sim/flight-model"]
@@ -46,24 +64,50 @@ def translateToAirplane( fgData ):
   gs_flying = ground_speed > 40.0
   vs_flying = abs(vertical_speed) > 100.0
     
-  # Set ON_GROUND bit if altitude check passes and not flying by speed
+  # Set ON_GROUND bit (0x0001) if altitude check passes and not flying by speed
   if on_ground_alt and not (gs_flying or vs_flying):
     shortFlags |= 0x0001
   
+  # --- Dynamic Pause and Replay Bitmask Logic ---
+  # Pause check: /sim/freeze/master (boolean or "true"/"1" string)
+  freeze_val = fgData.get("freeze (simulation paused)", fgData.get("/sim/freeze/master", False))
+  if freeze_val is True or str(freeze_val).strip().lower() in ("true", "1"):
+    shortFlags |= 0x0080  # SIM_PAUSED
+
+  # Replay check: /sim/replay/replay-state (integer > 0 means active replay)
+  replay_val = fgData.get("replay (replay enabled)", fgData.get("/sim/replay/replay-state", 0))
+  try:
+    if int(replay_val) > 0:
+      shortFlags |= 0x0100  # SIM_REPLAY
+  except (ValueError, TypeError):
+    pass
+
+  # ----------------------------------------------
+  # --- Parse FlightGear Sim Time (Zulu) ---
+  gmt_str = str(fgData.get("/sim/time/gmt", "")).strip()
+  try:
+      # 1. Parse naive ISO string (YYYY-MM-DDTHH:MM:SS)
+      z_dt = datetime.fromisoformat(gmt_str)
+      # 2. Explicitly attach UTC timezone info for consistency
+      if z_dt.tzinfo is None:
+          z_dt = z_dt.replace(tzinfo=timezone.utc)
+  except (ValueError, TypeError):
+      z_dt = datetime.now(timezone.utc)
+  
+  zuluDateTime = (
+      z_dt.year, z_dt.month, z_dt.day,
+      z_dt.hour, z_dt.minute, z_dt.second,
+      z_dt.microsecond // 1000
+  )
+  # ----------------------------------------
+
   # Extract title once for both helicopter check and dictionary  
   title = fgData["/sim/description"]  
 
-  # Helicopter override logic (uses title)  
+  # Helicopter override logic (blazingly fast in-memory check, uses title)
   categoryByte = 0  # Default to Airplane  
-  if title:  
-    try:  
-      if os.path.exists("helicopters.txt"):  
-        with open("helicopters.txt", "r", encoding="utf-8") as f:  
-          heli_titles = [line.strip() for line in f if line.strip()]  
-          if any(heli.lower() == title.lower() for heli in heli_titles):  
-            categoryByte = 1  
-    except Exception:  
-      pass  
+  if title and title.lower() in HELICOPTER_TITLES:  
+      categoryByte = 1
 
   myAirplane = { "lonx"                       : fgData["/position/longitude-deg"],
                  "laty"                       : fgData["/position/latitude-deg"],
@@ -94,13 +138,14 @@ def translateToAirplane( fgData ):
                  "trackTrueDeg"               : fgData["/orientation/true-heading-deg"],
                  "title"                      : fgData["/sim/description"],
                  "categoryByte"               : categoryByte,  
-                 "model" : fgData["/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model"],
+                 "model"                      : fgData["/addons/by-id/com.slawekmikula.flightgear.LittleNavMap/aircraft-model"],
                  "reg"                        : fgData["/sim/multiplay/callsign"],
                  "type"                       : "",
                  "airline"                    : "",
                  "flightNr"                   : "",
                  "fromIdent"                  : "",
                  "toIdent"                    : "",
+                 "zuluDateTime"               : zuluDateTime,
                }
   return myAirplane
 
@@ -138,8 +183,8 @@ def translateToAI( fgAllData ):
                    "type"                       : "",
                    "airline"                    : "",
                    "title"                      : "",
-                   # CRITICAL FIX: Use 999.0 so LNM falls back to calculating Mag Heading dynamically
-                   "headingMagDeg"              : 999.0 if not isCarrier else (heading_true - fgData.get("environment/magnetic-variation-deg", 0.0)) % 360.0,
+                   # Use float32 max sentinel so LNM falls back to calculating Mag Heading dynamically
+                   "headingMagDeg"              : FLOAT_INVALID if not isCarrier else (heading_true - fgData.get("environment/magnetic-variation-deg", 0.0)) % 360.0,
                    "indicatedAltitudeFt"        : fgData["position/altitude-ft"],
                    "indicatedSpeedKts"          : speed_base, # Populates flying UI fields
                    "trueAirspeedKts"            : speed_base, # Populates telemetry UI fields
